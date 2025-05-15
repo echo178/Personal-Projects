@@ -6,7 +6,7 @@ A showcase of two end-to-end projects combining front-end and back-end developme
 
 ## 🂡 Shan 9 Mee – Card Game Probability App
 
-A lightweight web app inspired by Shan Koe Mee (a simplified form of poker), designed to help players calculate their odds of winning based on current card combinations.
+A lightweight web app inspired by Shan Koe Mee (a simplified form of poker, a popular card game in my country), designed to help players calculate their odds of winning based on current card combinations.
 
 ### 🔧 Technologies Used
 - HTML, CSS

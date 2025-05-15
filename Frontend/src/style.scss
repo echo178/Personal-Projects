@@ -1,0 +1,43 @@
+@import "../node_modules/bootstrap/scss/bootstrap.scss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300&display=swap');
+
+
+$font-family-sans-serif: Inter,X-LocaleSpecific,sans-serif;
+:root {
+    --bs-font-sans-serif: #{$font-family-sans-serif};
+}
+.modal-dialog{
+  max-width: 75%;
+  margin: 0.5rem;
+}
+.navbar-light .navbar-nav .nav-link {
+  color: rgb(241, 241, 241);
+}
+
+table {
+  border-collapse: separate;
+}
+pre{
+  margin-bottom: 0;
+}
+@media (max-width: 768px){
+  .navbar-light .navbar-toggler {
+    color: rgba(0, 0, 0, 0.55);
+    border-color: rgba(0, 0, 0, 1);
+  }
+  .analyticTable.container{
+    padding-right: 0;
+    padding-left: 0;
+  }
+  .row{
+    margin-right: 0;
+    margin-left: 0;
+  }
+  .row > *{
+    padding-right: 0;
+    padding-left: 0;
+  }
+  .modal-dialog{
+    max-width: 100%;
+  }
+}

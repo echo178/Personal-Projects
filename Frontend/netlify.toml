@@ -1,0 +1,11 @@
+[[plugins]]
+package = "@netlify/plugin-sitemap"
+
+  [plugins.inputs]
+  buildDir = "."
+  
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+

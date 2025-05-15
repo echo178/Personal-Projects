@@ -1,0 +1,483 @@
+<html>
+    <head><title>Edit Watchlist</title></head>
+    <body>
+        <div class="control-center">
+        <input class="inline-block" type="text" placeholder="Search" id="search"></input><button class="inline-block" onclick="search()" id="search">search</button>
+        <br/>
+        <button class="btn inline-block">Prev</button>
+        <button class="btn inline-block">Next</button>
+        <br/><br/>
+        <button onclick="filterToID()" >Urgent</button>
+        <br/>
+        <button onclick="DailyFilter()"> Daily</button>
+        <br/>
+        <button onclick="AddForm()">Add New Song</button>
+        </div>
+        
+        
+    </body>
+    
+    <style>
+        .control-center{
+            text-align: center
+        }
+        .inline-block{
+            display: inline-block;
+            
+        }
+        label, input {
+            display: block;
+        }
+        
+        label, input{
+            margin-bottom: 20px;
+        }
+        
+        form{
+            padding: 30px;
+            width: 60%; 
+        }
+        form, button, input{
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+        }
+        body{
+            padding: 250px 0;
+        }
+    </style>
+    <script>
+        let data, i
+        let currPageNumber = 0;
+        let url
+        let submitURL = 'http://localhost:8888/api/server/updateWatchlist_song'
+        let newVideoIdArray = []
+        let newRelatedGroupArray = []
+        let currDateObj = new Date()
+        let filtered
+        async function getData(url){
+
+            if(!url){
+                url = 'http://localhost:8888/api/server/watchlist_song'
+            }
+            data = await fetch(url)
+            .then(
+           result => result.json())
+           if(filtered !== undefined){
+             if(filtered === 'ID'){
+                filterToID()
+             }if(filtered === 'daily'){
+                DailyFilter()
+             }
+           }else{
+            i = data.length - 1
+            createForm(data[currPageNumber])
+           }    
+           
+        }   
+        function createForm(obj){
+            if(obj){
+                var br = document.createElement('br')
+            var h3 = document.createElement('h3')
+            let text = currPageNumber + ' / ' + i
+            var titleText = document.createTextNode(text)
+            h3.appendChild(titleText)
+            
+            var form = document.createElement('form')
+            form.setAttribute('class','form_' + currPageNumber)
+            form.setAttribute('id', 'submit-form')
+            var artist = document.createElement('label')
+            artist.innerHTML = 'Artist : ' + obj.Artist
+            artist.setAttribute('name','Artist')
+            artist.setAttribute('value',obj.Artist)
+            var album
+            album = document.createElement('input')
+            album.setAttribute('type','text')
+            album.setAttribute('placeholder','Album')
+            album.setAttribute('name','Album')
+            if(obj.Album !== ' '){
+            album.setAttribute('value',obj.Album.replace('<','&lt;'))
+            }
+                       
+            var date 
+            date = document.createElement('input')
+            date.setAttribute('type','text')
+            date.setAttribute('placeholder','Date')
+            date.setAttribute('name','Date')
+            date.setAttribute('value',obj.Date)
+            
+            let videoIdDiv = document.createElement('div')
+            videoIdDiv.setAttribute('id','videoId-div')
+            if(obj.views_2){  
+                for(let k = 0; k < obj.views_2.length; k++){
+                
+                    let videoId = document.createElement('label')
+                    videoId.setAttribute('name','videoId')
+                    videoId.innerHTML = 'video ID : ' + obj.views_2[k].videoId
+                    
+                    let channelName = document.createElement('label')
+                    channelName.setAttribute('name','channelName')
+                    channelName.innerHTML = 'channelName : ' + obj.views_2[k].channelName
+                    
+                    let videoTitle = document.createElement('label')
+                    videoTitle.setAttribute('name','videoTitle')
+                    videoTitle.innerHTML = 'videoTitle : ' + obj.views_2[k].title
+
+                    videoIdDiv.appendChild(videoId)
+                    videoIdDiv.appendChild(channelName)
+                    videoIdDiv.appendChild(videoTitle)
+                }                
+            }
+            let relatedGroupDiv = document.createElement('div')
+            relatedGroupDiv.setAttribute('id','relatedGroup-div')
+            if(obj.relatedGroups){
+                let currLabel = document.createElement('label')
+                    currLabel.setAttribute('name','relatedGroups')
+                    currLabel.innerHTML = '<b>Related Groups : </b>' + obj.relatedGroups.toString()
+                    relatedGroupDiv.appendChild(currLabel)
+                
+            }
+            let newRelatedGroup = document.createElement('input')
+            newRelatedGroup.setAttribute('type','text')
+            newRelatedGroup.setAttribute('placeholder','Add Related Group')
+            newRelatedGroup.setAttribute('id','add-related-group')
+            newRelatedGroup.setAttribute('name','newRelatedGroup')
+
+            let addRelatedGroupBtn = document.createElement('button')
+            addRelatedGroupBtn.setAttribute('type','button')
+            addRelatedGroupBtn.addEventListener('click',addRelatedGroup)
+            addRelatedGroupBtn.innerHTML = 'Add Related Group'
+            
+            relatedGroupDiv.appendChild(newRelatedGroup)
+            relatedGroupDiv.appendChild(addRelatedGroupBtn)
+            relatedGroupDiv.appendChild(br)
+
+            let newVideoId = document.createElement('input')
+            newVideoId.setAttribute('type','text')
+            newVideoId.setAttribute('placeholder','New Video ID')
+            newVideoId.setAttribute('id','add-video-id')
+            newVideoId.setAttribute('name','newvideoid')
+
+            let addVideoIdBtn = document.createElement('button')
+            addVideoIdBtn.setAttribute('type','button')
+            
+            addVideoIdBtn.addEventListener('click',addVideoId)
+            addVideoIdBtn.innerHTML = 'Add Video Id'
+            
+            videoIdDiv.appendChild(newVideoId)
+            videoIdDiv.appendChild(addVideoIdBtn)
+
+          
+            
+            
+            var song = document.createElement('input')
+            song.setAttribute('type','text')
+            song.setAttribute('placeholder','Song Name')
+            song.setAttribute('name','Song')
+            if(obj.Song !== ' '){
+            song.setAttribute('value',obj.Song)
+            }
+
+            var s = document.createElement("input");
+            s.setAttribute("type", "submit");
+            s.setAttribute("value", "Submit");
+            form.append(h3)
+            form.append(artist)            
+            form.append(album)            
+            form.append(date)
+            form.append(song)
+            form.append(relatedGroupDiv)            
+            form.append(videoIdDiv)
+            form.append(s) 
+            form.addEventListener('submit',captureForm)   
+            document.body.appendChild(form)
+            }
+            else{
+            var br = document.createElement('br')
+            var h3 = document.createElement('h3')
+
+            var form = document.createElement('form')
+            
+            form.setAttribute('class','form_' + currPageNumber)
+            form.setAttribute('id', 'submit-form')
+            var artist = document.createElement('input')
+            artist.setAttribute('type','text')
+            artist.setAttribute('placeholder','Artist')
+            artist.setAttribute('name','Artist')
+            
+            var album
+            album = document.createElement('input')
+            album.setAttribute('type','text')
+            album.setAttribute('placeholder','Album')
+            album.setAttribute('name','Album')
+                
+            var date 
+            date = document.createElement('input')
+            date.setAttribute('type','text')
+            date.setAttribute('placeholder','Date')
+            date.setAttribute('name','Date')
+                    
+            let videoIdDiv = document.createElement('div')
+            videoIdDiv.setAttribute('id','videoId-div')
+                      
+            let newVideoId = document.createElement('input')
+            newVideoId.setAttribute('type','text')
+            newVideoId.setAttribute('placeholder','New Video ID')
+            newVideoId.setAttribute('id','add-video-id')
+            newVideoId.setAttribute('name','newvideoid')
+
+            let addVideoIdBtn = document.createElement('button')
+            addVideoIdBtn.setAttribute('type','button')
+            
+            addVideoIdBtn.addEventListener('click',addVideoId)
+            addVideoIdBtn.innerHTML = 'Add Video Id'
+            
+            videoIdDiv.appendChild(newVideoId)
+            videoIdDiv.appendChild(addVideoIdBtn)
+            
+            var song = document.createElement('input')
+            song.setAttribute('type','text')
+            song.setAttribute('placeholder','Song Name')
+            song.setAttribute('name','Song')
+
+            let relatedGroupDiv = document.createElement('div')
+            relatedGroupDiv.setAttribute('id','relatedGroup-div')
+            
+            let newRelatedGroup = document.createElement('input')
+            newRelatedGroup.setAttribute('type','text')
+            newRelatedGroup.setAttribute('placeholder','Add Related Group')
+            newRelatedGroup.setAttribute('id','add-related-group')
+            newRelatedGroup.setAttribute('name','newRelatedGroup')
+
+            let addRelatedGroupBtn = document.createElement('button')
+            addRelatedGroupBtn.setAttribute('type','button')
+            addRelatedGroupBtn.addEventListener('click',addRelatedGroup)
+            addRelatedGroupBtn.innerHTML = 'Add Related Group'
+            
+            relatedGroupDiv.appendChild(newRelatedGroup)
+            relatedGroupDiv.appendChild(addRelatedGroupBtn)
+            relatedGroupDiv.appendChild(br)
+
+            var s = document.createElement("input");
+            s.setAttribute("type", "submit");
+            s.setAttribute("value", "Submit");
+            form.append(h3)
+            form.append(artist)            
+            form.append(album)            
+            form.append(date)
+            form.append(song)
+            form.append(relatedGroupDiv)            
+            form.append(videoIdDiv)
+            form.append(s) 
+            form.addEventListener('submit',captureForm)   
+            document.body.appendChild(form)
+           
+            }
+        }
+        function showForm_next(){
+           if(data){
+            let element = document.getElementsByClassName('form_'+currPageNumber)[0]
+            element.remove()
+            currPageNumber++;
+            if(currPageNumber > i){
+            currPageNumber = 0;
+           }
+           
+            createForm(data[currPageNumber])
+           } 
+        }
+        function showForm_prev(){
+           if(data){
+            let element = document.getElementsByClassName('form_'+currPageNumber)[0]
+            element.remove()
+            currPageNumber--;
+            if(currPageNumber < 1){
+            currPageNumber = i;
+           }
+           
+            createForm(data[currPageNumber])
+            
+           } 
+        }    
+        function addVideoId(e){
+            let value = document.getElementById('add-video-id').value
+
+            function validYoutubeId(id){
+                let regex = /^[A-Za-z0-9_-]{11}$/
+                return regex.test(id)
+        
+            }
+            if(validYoutubeId(value)){
+                newVideoIdArray.push(value)
+                document.getElementById('add-video-id').value = ''
+
+                let removeButton = document.createElement('button')
+                removeButton.setAttribute('type','button')
+                removeButton.setAttribute('id',value)
+                removeButton.innerHTML = 'x'
+                removeButton.addEventListener('click',removeVideoId)
+
+                let newAddedId = document.createElement('label')
+                newAddedId.setAttribute('class',value)
+                newAddedId.innerHTML = 'New Added Group : ' + value
+                newAddedId.append(removeButton)
+
+                let videoIdDiv = document.getElementById('videoId-div')
+
+                videoIdDiv.appendChild(newAddedId)
+            }
+            else{
+                document.getElementById('add-video-id').value = ''
+            }
+        }
+        function addRelatedGroup(e){
+            let value = document.getElementById('add-related-group').value
+            let br = document.createElement('br')
+            if(value && value !== ' '){
+            newRelatedGroupArray.push(value)
+            document.getElementById('add-related-group').value = ''
+
+            let removeButton = document.createElement('button')
+            removeButton.setAttribute('type','button')
+            removeButton.setAttribute('id',value)
+            removeButton.innerHTML = 'x'
+            removeButton.addEventListener('click',removeRelatedGroup)
+
+            let newAddedGroup = document.createElement('label')
+            newAddedGroup.setAttribute('class',value)
+            newAddedGroup.innerHTML = 'New Added Id : ' + value
+            newAddedGroup.append(removeButton)
+
+            let relatedGroupDiv = document.getElementById('relatedGroup-div')
+            relatedGroupDiv.appendChild(newAddedGroup)
+            relatedGroupDiv.appendChild(br)
+            }else{
+                document.getElementById('add-related-group').value = ''
+            }
+            
+        }
+        function removeVideoId(e){
+            let id = event.target.id
+            let removeElement = document.getElementsByClassName(id)[0]
+            removeElement.remove()
+            
+            let index = newVideoIdArray.indexOf(id)
+            if (index > -1) { 
+                newVideoIdArray.splice(index, 1); 
+            }             
+        }
+        function removeRelatedGroup(e){
+            let id = event.target.id
+            let removeElement = document.getElementsByClassName(id)[0]
+            removeElement.remove()
+
+            let index = newRelatedGroupArray.indexOf(id)
+            if (index > -1) { 
+                newRelatedGroupArray.splice(index, 1); 
+            } 
+        }
+        function search(e){
+            let searchText = document.getElementById('search').value
+            if(data){
+                let searchTextIndex = data.map((obj) => obj.Artist.toLowerCase()).indexOf(searchText.toLowerCase())
+                console.log(data,searchTextIndex)
+                if(searchTextIndex !== -1){
+                    
+                    let element = document.getElementsByClassName('form_'+currPageNumber)[0]
+                    element.remove()
+                    currPageNumber = searchTextIndex
+                    newVideoIdArray = []
+                    createForm(data[currPageNumber])
+                }
+            }
+        }
+        function filterToID(){
+            let curDate = currDateObj.getDate() + 1
+            let filterData = data.filter((obj) => obj.Day <=curDate && obj.views_2 === undefined)
+            filtered = 'ID'
+            data = filterData
+            i = data.length - 1
+
+            if(currPageNumber > i){
+                currPageNumber = 0 
+            }
+            if(document.getElementsByClassName('form_'+currPageNumber)[0]){
+            let element = document.getElementsByClassName('form_'+currPageNumber)[0]    
+            element.remove()
+            }
+            createForm(data[currPageNumber])
+        }
+        function DailyFilter(){
+            filtered = 'daily'
+
+            let curDate = currDateObj.getDate()
+            if(document.getElementsByClassName('form_'+currPageNumber)[0]){
+            let element = document.getElementsByClassName('form_'+currPageNumber)[0]    
+            element.remove()
+            }
+            
+            let filterData = data.filter((obj) => obj.Day - curDate === 0 || obj.Day - curDate === -1)
+            data = filterData
+            i = data.length - 1
+            if(currPageNumber > i){
+                currPageNumber = 0 
+            }
+                      
+            createForm(data[currPageNumber])
+        }
+        async function captureForm(e){
+            e.preventDefault()
+            let form = new FormData(document.getElementById('submit-form'))
+            if(document.getElementsByName('Artist')[0].nodeName === 'LABEL'){
+            let artistData = document.getElementsByName('Artist')[0].getAttribute('value')           
+            form.append('Artist', artistData)
+            }
+            
+            
+            if(newVideoIdArray.length > 0){
+                for(let t = 0; t < newVideoIdArray.length; t++){
+                    form.append('newVideoID[]', newVideoIdArray[t]);                    
+                }
+            }else{
+                form.append('newVideoID[]','')
+            }
+            
+            form.delete('newvideoid')    
+
+            if(newRelatedGroupArray.length>0){
+                for(let t = 0; t < newRelatedGroupArray.length; t++){
+                    form.append('newRelatedGroup[]', newRelatedGroupArray[t]);                    
+                }
+            }else{
+                form.append('newRelatedGroup[]','')
+            }
+            form.delete('newRelatedGroup')
+           
+            await fetch(submitURL,{ method: 'POST', 
+                body: form,
+            })
+            
+            newVideoIdArray = []
+            newRelatedGroupArray = []
+            let element = document.getElementById('submit-form')
+            element.remove()
+            getData(url)                       
+        }
+        function AddForm(){
+            submitURL = 'http://localhost:8888/api/server/insertWatchlist'
+            if(document.getElementsByClassName('form_'+currPageNumber)[0]){
+            let element = document.getElementsByClassName('form_'+currPageNumber)[0]    
+            element.remove()
+            }
+            createForm()
+        }
+        let button_1 = document.getElementsByClassName('btn')[0]
+        
+        button_1.addEventListener('click',showForm_prev)
+        let button_2 = document.getElementsByClassName('btn')[1]
+        button_2.addEventListener('click',showForm_next)
+        getData(url)
+    </script>
+    
+</html>

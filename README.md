@@ -36,7 +36,7 @@ A full-stack MERN web application that scrapes, transforms, and visualizes real-
 - Dynamic dashboard with charts & data visualizations
 - Data requests from backend based on user queries
 
-### 🧰 Admin Panel
+### 🧰 Database Updating Client
 - A dedicated **Database Management Client**
 - Enables manual data updates directly to MongoDB
 - Ensures clean and controlled dataset maintenance
